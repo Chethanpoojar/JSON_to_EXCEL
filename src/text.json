@@ -1,0 +1,16 @@
+{
+  "PartnerAccountInquiryReqDTO": {
+    "searchCriteria": "1",
+
+    "maskedAccountNumber": "1382",
+    "mobileNumber": "9885804000"
+  },
+  "sessionContext": {
+    "channel": "MB53",
+    "bankCode": "08",
+    "userId": "DevUser01",
+    "externalReferenceNo": "1234565",
+    "transactionBranch": "089999",
+    "transactingPartyCode": "9898765645"
+  }
+}

@@ -78,58 +78,123 @@ const App = (e) => {
   }
 
   useEffect(() => {
-    let aa = get_dict("root", JSON_DATA, {});
+    let aa = get_dict("Root", json, {});
     setjsonData(aa);
   }, []);
 
-  const sourceFileInput = (event) => {
-    // const file = event.target.files[0];
+  const hadleFileInput = (e) => {
+    const file = e.target.files[0];
     const reader = new FileReader();
-    reader.onload = () => {
-      window.alert("coming")
-      const data = reader.result;
+
+    reader.onload = function (e) {
+      const data = e.target.result;
+      const wb = XLSX.read(data, { type: "binary" });
+      setsourcesheets(wb.SheetNames);
+
+      for (let sheetname in jsonData) {
+        const ws = wb.Sheets[`(REQ)_${sheetname}`];
+        const range = XLSX.utils.decode_range(ws["!ref"]);
+        range.s.r = 4;
+        range.e.r = 4;
+        const headers = [];
+        for (let C = range.s.c; C <= range.e.c; C++) {
+          for (let column in jsonData[sheetname]) {
+            const cellAddress = XLSX.utils.encode_cell({
+              r: range.s.r,
+              c: C,
+            });
+            if (!ws[cellAddress] || !ws[cellAddress].v) continue;
+            headers.push(ws[cellAddress].v);
+            ws[cellAddress].v = "A";
+          }
+        }
+
+        console.log(headers, "headers");
+      }
+
+      const outputData = XLSX.write(wb, {
+        type: "binary",
+        bookType: "xlsx",
+      });
+      const blob = new Blob([s2ab(outputData)], {
+        type: "application/octet-stream",
+      });
+      saveAs(blob, file.name);
+    };
+
+    reader.readAsBinaryString(e.target.files[0]);
+  };
+
+  const sourceFileInput = (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      const data = e.target.result;
       const workbook = XLSX.read(data, { type: "binary" });
       console.log(workbook.SheetNames, "workbook");
       setsourcesheets(workbook.SheetNames);
 
       for (let sheetname in jsonData) {
-        window.alert(sheetname);
-
-        const worksheet = workbook.Sheets["root"];
-
+        const worksheet = workbook.Sheets[`(REQ)_${sheetname}`];
         const range = XLSX.utils.decode_range(worksheet["!ref"]);
         range.s.r = 4;
         range.e.r = 4;
-
         // Iterate through the cells in the first row and extract the column names
         const headers = [];
         for (let C = range.s.c; C <= range.e.c; ++C) {
-          const address = XLSX.utils.encode_cell({ r: range.s.r, c: C });
-          const cell = worksheet[address];
-          if (!cell || !cell.v) continue;
-          headers.push(cell.v);
-        }
+          for (let column in jsonData[sheetname]) {
+            const address = XLSX.utils.encode_cell({ r: range.s.r, c: C });
+            let cell = worksheet[address];
+            if (!cell || !cell.v) continue;
+            headers.push(cell.v);
+            const cellAddress = XLSX.utils.encode_cell({ r: range.s.r, c: C });
 
-        range.s.r = 5;
-        range.e.r = 5;
-        for (let C = range.s.c; C <= range.e.c; ++C) {
-          const address = XLSX.utils.encode_cell({ r: range.s.r, c: C });
-          let cell = worksheet[address];
-          if (!cell || !cell.v) continue;
-          cell.v = "A";
-        }
+            // range.s.r = 5;
+            // range.e.r = 5;
+            // for (let C = range.s.c; C <= range.e.c; ++C) {
+            //   if (cell.v == column) {
+            //     const columnIndex = headers.indexOf(cell.v);
+            //     const rowIndex = 5;
+            //     const cellAddress = XLSX.utils.encode_cell({
+            //       r: rowIndex,
+            //       c: columnIndex,
+            //     });
+            //     const cell = worksheet[cellAddress];
+            //     if (!cell || !cell.v) continue;
+            //     if (worksheet[cellAddress]) {
+            //       worksheet[cellAddress].v = jsonData[sheetname][column] ?? "A";
+            //     }
+            //   }
+            // }
 
-        const outputData = XLSX.write(workbook, {
-          type: "binary",
-          bookType: "xlsx",
-        });
-        const blob = new Blob([s2ab(outputData)], {
-          type: "application/octet-stream",
-        });
-        // saveAs(blob, file.name);
+            // range.s.r = 5;
+            // range.e.r = 5;
+            // console.log(cell.v, ":", column, "cell column");
+            // for (let C = range.s.c; C <= range.e.c; ++C) {
+            //   // if (cell.v == column) {
+            //   const address = XLSX.utils.encode_cell({ r: range.s.r, c: C });
+            //   let cell = worksheet[address];
+            //   if (!cell || !cell.v) continue;
+            //   cell.v =  "A";
+            //   // }
+            // }
+          }
+        }
+        console.log(headers, "headers");
       }
-      reader.readAsBinaryString(event.target.files[0]);
+
+      const outputData = XLSX.write(workbook, {
+        type: "binary",
+        bookType: "xlsx",
+      });
+      const blob = new Blob([s2ab(outputData)], {
+        type: "application/octet-stream",
+      });
+      saveAs(blob, file.name);
     };
+
+    reader.readAsBinaryString(event.target.files[0]);
   };
 
   const s2ab = (s) => {
@@ -154,7 +219,7 @@ const App = (e) => {
         </div>
       )}
 
-      <button onClick={""}>Generate JSON</button>
+      {/* <button onClick={""}>Generate JSON</button> */}
 
       {/* <MoveJsonToExcel /> */}
     </div>

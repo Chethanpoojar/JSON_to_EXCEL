@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import MoveJsonToExcel from "./module/pages/fileUpload";
 
 const JSONtoEXCEL = (e) => {
   const [sourcesheets, setsourcesheets] = useState();
@@ -139,7 +138,7 @@ const JSONtoEXCEL = (e) => {
         const worksheet = workbook.Sheets[`(REQ)_${sheetname}`];
 
         // Get the current highest row number in the sheet
-        const currentHighestRow = worksheet["!ref"]
+        const currentHighestRow = worksheet && worksheet["!ref"]
           .split(":")[1]
           .replace(/\D/g, "");
 
@@ -154,7 +153,7 @@ const JSONtoEXCEL = (e) => {
         const jsonKeys = Object.keys(modifiedJsonData[sheetname]);
 
         jsonKeys.forEach((key) => {
-          const columnIndex = headerRow.findIndex((header) =>
+          const columnIndex = headerRow?.findIndex((header) =>
             key.match(new RegExp(header + "*"))
           );
           // if (columnIndex !== -1) {
@@ -195,7 +194,7 @@ const JSONtoEXCEL = (e) => {
       <div
         style={{ display: "flex", justifyContent: "center", marginTop: "4rem" }}
       >
-        <input type="file" onChange={handleJsonFileChange} />
+        <input type="file" onChange={handleJsonFileChange} accept=".json" />
 
         <input type="file" onChange={handleExcelFileChange} accept=".xlsx" />
       </div>
@@ -227,4 +226,3 @@ const JSONtoEXCEL = (e) => {
 };
 
 export default JSONtoEXCEL;
-

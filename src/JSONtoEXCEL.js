@@ -5,12 +5,12 @@ import MoveJsonToExcel from "./module/pages/fileUpload";
 
 const JSONtoEXCEL = (e) => {
   const [sourcesheets, setsourcesheets] = useState();
-  const [jsonData, setjsonData] = useState({});
+  const [jsonData, setjsonData] = useState({ req: "", resp: "" });
   const [modifiedJsonData, setModifiedJsonData] = useState({});
   const [excelFile, setExcelFile] = useState(null);
   const [keys, setKeys] = useState({});
 
-  console.log(modifiedJsonData, "modifiedJsonData");
+  // console.log(modifiedJsonData, "modifiedJsonData");
   console.log(jsonData, "jsonData");
   console.log(keys, "keyskeys");
 
@@ -196,22 +196,14 @@ const JSONtoEXCEL = (e) => {
           }
         } else if (Array.isArray(value)) {
           for (let item of value) {
-            out_dic = handleJSON(
-              key,
-              item,
-              out_dic
-            );
+            out_dic = handleJSON(key, item, out_dic);
           }
         } else if (
           typeof value === "object" &&
           value !== null &&
           value !== undefined
         ) {
-          out_dic = handleJSON(
-            key,
-            value,
-            out_dic
-          );
+          out_dic = handleJSON(key, value, out_dic);
         }
       }
     }
@@ -219,7 +211,7 @@ const JSONtoEXCEL = (e) => {
     return out_dic;
   };
 
-  const handleJsonFileChange = (e) => {
+  const handleReqJsonFileChange = (e) => {
     const file = e.target.files[0];
     setjsonData(file);
     const reader = new FileReader();
@@ -227,7 +219,19 @@ const JSONtoEXCEL = (e) => {
       const data = JSON.parse(reader.result);
       console.log(data, "datadata");
       let MODIFIED = handleJSON("Root", data, {});
-      setModifiedJsonData(MODIFIED);
+      setModifiedJsonData({ ...modifiedJsonData, req: MODIFIED });
+    };
+    reader.readAsText(file);
+  };
+
+  const handleRespJsonFileChange = (e) => {
+    const file = e.target.files[0];
+    setjsonData(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const data = JSON.parse(reader.result);
+      let MODIFIED = handleJSON("Root", data, {});
+      setModifiedJsonData({ ...modifiedJsonData, resp: MODIFIED });
     };
     reader.readAsText(file);
   };
@@ -243,39 +247,94 @@ const JSONtoEXCEL = (e) => {
     reader.onload = function (e) {
       const data = e.target.result;
       const workbook = XLSX.read(data, { type: "binary" });
-      setsourcesheets(workbook.SheetNames);
+      // setsourcesheets(workbook.SheetNames);
 
-      for (let sheetname in modifiedJsonData) {
-        const worksheet =
-          workbook.Sheets[`(REQ)_${sheetname}` || `(RESP_200)_${sheetname}`];
+      if (modifiedJsonData?.req) {
+        for (let sheetname in modifiedJsonData?.req) {
+          let worksheet = workbook.Sheets[`(REQ)_${sheetname}`];
 
-        // Get the current highest row number in the sheet
-        const currentHighestRow =
-          worksheet && worksheet["!ref"].split(":")[1].replace(/\D/g, "");
+          if (!worksheet) {
+            // handle the case where the worksheet does not exist
+            console.error(
+              `Worksheet '(REQ)_${sheetname}' not found in workbook`
+            );
+            continue;
+          }
 
-        // Insert a new row after the current highest row
-        const newRowNumber = parseInt(currentHighestRow) + 1;
-        const newRowRef = `A${newRowNumber}:Z${newRowNumber}`;
-        XLSX.utils.sheet_add_aoa(worksheet, [[""]], {
-          origin: newRowRef,
-        });
+          // Get the current highest row number in the sheet
+          const currentHighestRow =
+            worksheet && worksheet["!ref"].split(":")[1].replace(/\D/g, "");
 
-        const headerRow = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[4];
-        const jsonKeys = Object.keys(modifiedJsonData[sheetname]);
-
-        jsonKeys.forEach((key) => {
-          const columnIndex = headerRow?.findIndex((header) => header == key);
-          // if (columnIndex !== -1) {
-          // Write the value of the key in the corresponding cell of the 5th row
-          const cellAddress = XLSX.utils.encode_cell({
-            r: newRowNumber - 1,
-            c: columnIndex,
+          // Insert a new row after the current highest row
+          const newRowNumber = parseInt(currentHighestRow) + 1;
+          const newRowRef = `A${newRowNumber}:Z${newRowNumber}`;
+          XLSX.utils.sheet_add_aoa(worksheet, [[""]], {
+            origin: newRowRef,
           });
-          worksheet[cellAddress] = {
-            v: modifiedJsonData[sheetname][key] ?? "A",
-          };
-          // }
-        });
+
+          const headerRow = XLSX.utils.sheet_to_json(worksheet, {
+            header: 1,
+          })[4];
+          const jsonKeys = Object.keys(modifiedJsonData?.req[sheetname]);
+
+          jsonKeys.forEach((key) => {
+            const columnIndex = headerRow?.findIndex((header) => header == key);
+            // if (columnIndex !== -1) {
+            // Write the value of the key in the corresponding cell of the 5th row
+            const cellAddress = XLSX.utils.encode_cell({
+              r: newRowNumber - 1,
+              c: columnIndex,
+            });
+            worksheet[cellAddress] = {
+              v: modifiedJsonData?.req[sheetname][key] ?? "A",
+              // };
+            };
+          });
+        }
+      }
+
+      if (modifiedJsonData?.resp) {
+        for (let sheetname in modifiedJsonData?.resp) {
+          let worksheet = workbook.Sheets[`(RESP_200)_${sheetname}`];
+
+          if (!worksheet) {
+            // handle the case where the worksheet does not exist
+            console.error(
+              `Worksheet '(RESP_200)_${sheetname}' not found in workbook`
+            );
+            continue;
+          }
+
+          // Get the current highest row number in the sheet
+          const currentHighestRow =
+            worksheet && worksheet["!ref"].split(":")[1].replace(/\D/g, "");
+
+          // Insert a new row after the current highest row
+          const newRowNumber = parseInt(currentHighestRow) + 1;
+          const newRowRef = `A${newRowNumber}:Z${newRowNumber}`;
+          XLSX.utils.sheet_add_aoa(worksheet, [[""]], {
+            origin: newRowRef,
+          });
+
+          const headerRow = XLSX.utils.sheet_to_json(worksheet, {
+            header: 1,
+          })[4];
+          const jsonKeys = Object.keys(modifiedJsonData?.resp[sheetname]);
+
+          jsonKeys.forEach((key) => {
+            const columnIndex = headerRow?.findIndex((header) => header == key);
+            if (columnIndex !== -1) {
+              // Write the value of the key in the corresponding cell of the 5th row
+              const cellAddress = XLSX.utils.encode_cell({
+                r: newRowNumber - 1,
+                c: columnIndex,
+              });
+              worksheet[cellAddress] = {
+                v: modifiedJsonData?.resp[sheetname][key] ?? "A",
+              };
+            }
+          });
+        }
       }
 
       const outputData = XLSX.write(workbook, {
@@ -301,18 +360,34 @@ const JSONtoEXCEL = (e) => {
   return (
     <>
       <div
-        style={{ display: "flex", justifyContent: "center", marginTop: "4rem" }}
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          marginTop: "4rem",
+        }}
       >
-        <input type="file" onChange={handleJsonFileChange} />
+        <>
+          Request : <input type="file" onChange={handleReqJsonFileChange} />
+        </>
 
-        <input type="file" onChange={handleExcelFileChange} accept=".xlsx" />
+        <>
+          Response : <input type="file" onChange={handleRespJsonFileChange} />
+        </>
+
+        <>
+          Excel Template :
+          <input type="file" onChange={handleExcelFileChange} accept=".xlsx" />
+        </>
       </div>
 
       <div
         style={{ display: "flex", justifyContent: "center", marginTop: "4rem" }}
       >
         <button
-          disabled={!(modifiedJsonData && excelFile)}
+          disabled={
+            !((modifiedJsonData.req || modifiedJsonData.resp) && excelFile)
+          }
           onClick={handleUpload}
         >
           Upload

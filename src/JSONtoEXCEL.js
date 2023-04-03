@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import MoveJsonToExcel from "./module/pages/fileUpload";
@@ -8,9 +8,11 @@ const JSONtoEXCEL = (e) => {
   const [jsonData, setjsonData] = useState({});
   const [modifiedJsonData, setModifiedJsonData] = useState({});
   const [excelFile, setExcelFile] = useState(null);
+  const [keys, setKeys] = useState({});
 
   console.log(modifiedJsonData, "modifiedJsonData");
   console.log(jsonData, "jsonData");
+  console.log(keys, "keyskeys");
 
   // useEffect(() => {
   //   if (Object.keys(jsonData).length > 0) {
@@ -25,90 +27,197 @@ const JSONtoEXCEL = (e) => {
   //   }
   // }, [jsonData]);
 
-  function get_name(name, lis) {
-    let aa = [];
-    for (let li of lis) {
-      let temp = li.match(new RegExp(name + "*"));
-      if (temp) {
-        aa.push(temp);
-      }
-    }
-    if (aa.length) {
-      name = name + (aa.length < 9 ? " 0" : " ") + (aa.length + 1);
-    }
-    return name;
-  }
+  // function get_name(name, lis) {
+  //   let aa = [];
+  //   for (let li of lis) {
+  //     let temp = li.match(new RegExp(name + "*"));
+  //     if (temp) {
+  //       aa.push(temp);
+  //     }
+  //   }
+  //   if (aa.length) {
+  //     name = name + (aa.length < 9 ? " 0" : " ") + (aa.length + 1);
+  //   }
+  //   return name;
+  // }
 
-  function get_sec_name(name, out_dic) {
-    let values = [];
-    for (let val_dic of Object.values(out_dic)) {
-      values.push(...Object.keys(val_dic));
-    }
-    return get_name(name, values);
-  }
+  // function get_sec_name(name, out_dic) {
+  //   let values = [];
+  //   for (let val_dic of Object.values(out_dic)) {
+  //     values.push(...Object.keys(val_dic));
+  //   }
+  //   return get_name(name, values);
+  // }
 
-  function get_dict(name, in_dic, out_dic) {
-    name = get_name(name, Object.keys(out_dic));
+  const getName = (name) => {
+    let KEYS = keys;
+    if (KEYS[name]) {
+      KEYS[name] = KEYS[name] + 1;
+      setKeys(KEYS);
+      return name + (KEYS[name] <= 9 ? " 0" : " ") + KEYS[name];
+    } else {
+      KEYS[name] = 1;
+      setKeys(KEYS);
+      return name;
+    }
+  };
+
+  // function get_dict(name, in_dic, out_dic) {
+  //   name = get_name(name, Object.keys(out_dic));
+  //   if (
+  //     typeof in_dic === "string" ||
+  //     typeof in_dic === "number" ||
+  //     typeof in_dic === null ||
+  //     typeof in_dic === undefined
+  //   ) {
+  //     let key1 = get_sec_name("NativeType", out_dic);
+  //     if (out_dic[name]) {
+  //       out_dic[name][key1] = in_dic;
+  //     } else {
+  //       out_dic[name] = { [key1]: in_dic };
+  //     }
+  //   } else {
+  //     for (let [key, value] of Object.entries(in_dic)) {
+  //       if (Array.isArray(value)) {
+  //         for (let dic of value) {
+  //           if (Array.isArray(dic)) {
+  //             out_dic = get_dict(key, dic, out_dic);
+  //           } else if (typeof dic === "object") {
+  //             out_dic = get_dict(key, dic, out_dic);
+  //           } else if (typeof dic === "string") {
+  //             key = get_sec_name(key, out_dic);
+  //             out_dic = get_dict(key, dic, out_dic);
+  //           }
+  //         }
+  //       } else if (
+  //         typeof value === "object" &&
+  //         value !== null &&
+  //         value !== undefined
+  //       ) {
+  //         out_dic = get_dict(key, value, out_dic);
+  //       } else if (
+  //         typeof value === "string" ||
+  //         typeof value === "number" ||
+  //         typeof value === null ||
+  //         typeof value === undefined
+  //       ) {
+  //         key = get_sec_name(key, out_dic);
+  //         if (out_dic[name]) {
+  //           out_dic[name][key] = value;
+  //         } else {
+  //           out_dic[name] = { [key]: value };
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return out_dic;
+  // }
+
+  // function get_dict(name, in_dic, out_dic) {
+  //   name = getName(name);
+  //   if (
+  //     typeof in_dic == "string" ||
+  //     typeof in_dic == "number" ||
+  //     in_dic == null ||
+  //     in_dic == undefined
+  //   ) {
+  //     let key1 = getName("NativeType");
+  //     if (out_dic[name]) {
+  //       out_dic[name][key1] = in_dic;
+  //     } else {
+  //       out_dic[name] = { [key1]: in_dic };
+  //     }
+  //   } else {
+  //     for (let [key, value] of Object.entries(in_dic)) {
+  //       if (Array.isArray(value)) {
+  //         for (let dic of value) {
+  //           if (Array.isArray(dic)) {
+  //             out_dic = get_dict(key, dic, out_dic);
+  //           } else if (typeof dic === "object") {
+  //             out_dic = get_dict(key, dic, out_dic);
+  //           } else if (typeof dic === "string") {
+  //             key = getName(key);
+  //             out_dic = get_dict(key, dic, out_dic);
+  //           }
+  //         }
+  //       } else if (
+  //         typeof value === "object" &&
+  //         value !== null &&
+  //         value !== undefined
+  //       ) {
+  //         out_dic = get_dict(key, value, out_dic);
+  //       } else if (
+  //         typeof value == "string" ||
+  //         typeof value == "number" ||
+  //         value == null ||
+  //         value == undefined
+  //       ) {
+  //         key = getName(key);
+  //         if (out_dic[name]) {
+  //           out_dic[name][key] = value;
+  //         } else {
+  //           out_dic[name] = { [key]: value };
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return out_dic;
+  // }
+
+  const handleJSON = (name, data, out_dic, column) => {
+    name = getName(name);
     if (
-      typeof in_dic === "string" ||
-      typeof in_dic === "number" ||
-      typeof in_dic === null ||
-      typeof in_dic === undefined
+      typeof data == "string" ||
+      Number.isInteger(data) ||
+      typeof data == "boolean" ||
+      data == null ||
+      data == undefined
     ) {
-      let key1 = get_sec_name("NativeType", out_dic);
+      let key1 = getName(column ?? "NativeType");
       if (out_dic[name]) {
-        out_dic[name][key1] = in_dic;
+        out_dic[name][key1] = data;
       } else {
-        out_dic[name] = { [key1]: in_dic };
+        out_dic[name] = { [key1]: data };
       }
     } else {
-      for (let [key, value] of Object.entries(in_dic)) {
-        if (Array.isArray(value)) {
-          for (let dic of value) {
-            if (Array.isArray(dic)) {
-              out_dic = get_dict(key, dic, out_dic);
-            } else if (typeof dic === "object") {
-              out_dic = get_dict(key, dic, out_dic);
-            } else if (typeof dic === "string") {
-              key = get_sec_name(key, out_dic);
-              out_dic = get_dict(key, dic, out_dic);
-            }
+      for (let [key, value] of Object.entries(data)) {
+        if (
+          typeof value == "string" ||
+          Number.isInteger(value) ||
+          typeof value == "boolean" ||
+          value == null ||
+          value == undefined
+        ) {
+          let key1 = getName(key);
+          if (out_dic[name]) {
+            out_dic[name][key1] = value;
+          } else {
+            out_dic[name] = { [key1]: value };
+          }
+        } else if (Array.isArray(value)) {
+          for (let item of value) {
+            out_dic = handleJSON(
+              key,
+              item,
+              out_dic
+            );
           }
         } else if (
           typeof value === "object" &&
           value !== null &&
           value !== undefined
         ) {
-          out_dic = get_dict(key, value, out_dic);
-        } else if (
-          typeof value === "string" ||
-          typeof value === "number" ||
-          typeof value === null ||
-          typeof value === undefined
-        ) {
-          key = get_sec_name(key, out_dic);
-          if (out_dic[name]) {
-            out_dic[name][key] = value;
-          } else {
-            out_dic[name] = { [key]: value };
-          }
+          out_dic = handleJSON(
+            key,
+            value,
+            out_dic
+          );
         }
       }
     }
+
     return out_dic;
-  }
-
-  const json = {
-    name: "John Smith",
-    age: 30,
-    email: "john.smith@example.com",
-    hobbies: ["reading", "traveling", "photography"],
   };
-
-  // useEffect(() => {
-  //   let aa = get_dict("Root", json, {});
-  //   setModifiedJsonData(aa);
-  // }, []);
 
   const handleJsonFileChange = (e) => {
     const file = e.target.files[0];
@@ -116,8 +225,9 @@ const JSONtoEXCEL = (e) => {
     const reader = new FileReader();
     reader.onload = () => {
       const data = JSON.parse(reader.result);
-      let aa = get_dict("Root", data, {});
-      setModifiedJsonData(aa);
+      console.log(data, "datadata");
+      let MODIFIED = handleJSON("Root", data, {});
+      setModifiedJsonData(MODIFIED);
     };
     reader.readAsText(file);
   };
@@ -136,12 +246,12 @@ const JSONtoEXCEL = (e) => {
       setsourcesheets(workbook.SheetNames);
 
       for (let sheetname in modifiedJsonData) {
-        const worksheet = workbook.Sheets[`(REQ)_${sheetname}`];
+        const worksheet =
+          workbook.Sheets[`(REQ)_${sheetname}` || `(RESP_200)_${sheetname}`];
 
         // Get the current highest row number in the sheet
-        const currentHighestRow = worksheet["!ref"]
-          .split(":")[1]
-          .replace(/\D/g, "");
+        const currentHighestRow =
+          worksheet && worksheet["!ref"].split(":")[1].replace(/\D/g, "");
 
         // Insert a new row after the current highest row
         const newRowNumber = parseInt(currentHighestRow) + 1;
@@ -154,9 +264,7 @@ const JSONtoEXCEL = (e) => {
         const jsonKeys = Object.keys(modifiedJsonData[sheetname]);
 
         jsonKeys.forEach((key) => {
-          const columnIndex = headerRow.findIndex((header) =>
-            key.match(new RegExp(header + "*"))
-          );
+          const columnIndex = headerRow?.findIndex((header) => header == key);
           // if (columnIndex !== -1) {
           // Write the value of the key in the corresponding cell of the 5th row
           const cellAddress = XLSX.utils.encode_cell({
@@ -227,4 +335,3 @@ const JSONtoEXCEL = (e) => {
 };
 
 export default JSONtoEXCEL;
-

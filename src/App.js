@@ -5,8 +5,8 @@ import OpenFile from "./openFile";
 function App() {
   return (
     <div className="App">
-      <JSONtoEXCEL />
-      {/* <OpenFile /> */}
+      {/* <JSONtoEXCEL /> */}
+      <OpenFile />
     </div>
   );
 }

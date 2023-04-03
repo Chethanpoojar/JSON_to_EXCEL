@@ -33,6 +33,7 @@ import {
 } from "firebase/storage";
 import { firebaseapp } from "./Firebase";
 import OpenModal from "./OpenModal";
+import { useCallback } from "react";
 
 const OpenFile = () => {
   const [file, setFile] = useState(null);
@@ -40,43 +41,52 @@ const OpenFile = () => {
   const [openModal, setopenModal] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(null);
 
+  console.log(fileUrl, "fileUrlfileUrl");
+
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
   };
 
-  const handleUpload = async () => {
+  const handleUpload = useCallback(async () => {
     const storage = getStorage(firebaseapp);
-    const storageRef = storage.ref();
-    const fileRef = storageRef.child(file.name);
-    const uploadTask = fileRef.put(file);
-    // const storage = firebaseapp.storage();
-    // const fileRef = ref(storage, file.name);
-    // await uploadBytes(fileRef, file);
-    // const uploadTask = await uploadBytesResumable(fileRef, file);
+    const fileRef = ref(storage, file.name);
+    await uploadBytes(fileRef, file);
+    const uploadTask = await uploadBytesResumable(fileRef, file);
 
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setUploadProgress(progress);
-      },
-      (error) => {
-        console.error(error);
-      },
-      () => {
-        window.alert("Upload complete!");
-      }
+    console.log("Step1");
+    const fileRef2 = storage.refFromURL(
+      `gs://${uploadTask?.bucket}/${uploadTask?.name}`
     );
 
-    const url = await getDownloadURL(fileRef);
-    setFileUrl(url);
+    console.log("Step2");
+    const downloadURL = await fileRef2.getDownloadURL();
+
+    console.log("Download URL:", downloadURL);
+    console.log("finished");
+  }, [file]);
+
+  const handleFileUpload = async (e) => {
+    e.preventDefault();
+    const storage = getStorage(firebaseapp);
+    const path = `/images/${file.name}`;
+    // const ref = storage.ref(path);
+    const fileRef = ref(storage, path);
+    // await uploadBytes(fileRef, file);
+    // await fileRef.put(file);
+    const uploadTask = await uploadBytesResumable(fileRef, file);
+    const URL =
+      uploadTask &&
+      `https://firebasestorage.googleapis.com/v0/b/show-file.appspot.com/o/${fileRef?.fullPath}?alt=media&token=${uploadTask?.downloadTokens}`;
+    setFileUrl(URL);
+    setFile(null);
+
+    console.log(uploadTask, "URL");
   };
 
   return (
-    <div>
+    <div style={{ marginTop: "4rem" }}>
       <input type="file" onChange={handleFileChange} accept=".jpg" />
-      <button onClick={handleUpload}>Upload File</button>
+      <button onClick={handleFileUpload}>Upload File</button>
       {/* {fileUrl && (
         <a href={fileUrl} target="_blank" rel="noopener noreferrer">
           Download File
@@ -87,12 +97,16 @@ const OpenFile = () => {
         <div>Upload progress: {uploadProgress.toFixed(2)}%</div>
       )}
 
-      {fileUrl && <button onClick={() => setopenModal(true)}>Open File</button>}
-      <OpenModal
-        isOpen={openModal}
-        fileUrl={fileUrl}
-        closeModal={() => setopenModal(false)}
-      />
+      <div>
+        {fileUrl && (
+          <button onClick={() => setopenModal(true)}>Open File</button>
+        )}
+        <OpenModal
+          isOpen={openModal}
+          fileUrl={fileUrl}
+          closeModal={() => setopenModal(false)}
+        />
+      </div>
     </div>
   );
 };

@@ -1,12 +1,10 @@
 import "./App.css";
-import JSONtoEXCEL from "./JSONtoEXCEL";
-import OpenFile from "./openFile";
+import FileViewer from "./openFile/FileViewer";
 
 function App() {
   return (
     <div className="App">
-      {/* <JSONtoEXCEL /> */}
-      <OpenFile />
+      <FileViewer />
     </div>
   );
 }

@@ -33,7 +33,7 @@ function FileViewer() {
   //   };
 
   const handleFileUpload = async (e) => {
-    setLoading(true)
+    setLoading(true);
     const file = e.target.files[0];
     const reader = new FileReader();
     reader.onloadend = handleFileRead;
@@ -49,12 +49,11 @@ function FileViewer() {
     getDownloadURL(fileRef)
       .then((downloadURL) => {
         setFileUrl(downloadURL);
-        setLoading(false)
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error getting download URL:", error);
       });
-
 
     // Determine the file type
     const fileType = file.type;
@@ -131,7 +130,7 @@ function FileViewer() {
           style={{
             display: "flex",
             justifyContent: "center",
-            height: `calc(100vh - 150px)`,
+            height: `calc(100vh - 130px)`,
             width: "70rem",
           }}
         />
@@ -147,7 +146,7 @@ function FileViewer() {
           style={{
             display: "flex",
             justifyContent: "center",
-            height: `calc(100vh - 150px)`,
+            height: `calc(100vh - 130px)`,
             width: "70rem",
           }}
         />
@@ -159,7 +158,7 @@ function FileViewer() {
           style={{
             display: "flex",
             justifyContent: "center",
-            height: `calc(100vh - 150px)`,
+            height: `calc(100vh - 130px)`,
             width: "70rem",
           }}
         />
@@ -175,7 +174,7 @@ function FileViewer() {
             style={{
               display: "flex",
               justifyContent: "center",
-              height: `calc(100vh - 100px)`,
+              height: `calc(100vh - 130px)`,
               width: "70rem",
             }}
           />
@@ -188,7 +187,7 @@ function FileViewer() {
           style={{
             display: "flex",
             justifyContent: "center",
-            height: `calc(100vh - 150px)`,
+            height: `calc(100vh - 145px)`,
             width: "70rem",
           }}
         />
@@ -215,7 +214,14 @@ function FileViewer() {
 
       {fileContent && (
         <Modal isOpen={openModal} onRequestClose={() => setopenModal(false)}>
-          <button onClick={() => setopenModal(false)}>Close Modal</button>
+          <div style={{ position: "relative" }}>
+            <button
+              onClick={() => setopenModal(false)}
+              style={{ position: "absolute", top: "-20px", right: "-20px" }}
+            >
+              Close Modal
+            </button>
+          </div>
 
           <div>{fileContent && renderFileContent()}</div>
         </Modal>

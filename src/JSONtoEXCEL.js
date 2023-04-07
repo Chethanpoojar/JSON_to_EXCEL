@@ -14,7 +14,6 @@ const JSONtoEXCEL = (e) => {
   const [version, setversion] = useState("2");
 
   console.log(modifiedJsonData, "modifiedJsonData");
-  console.log(jsonData, "jsonDatajsonData");
   console.log(keys, "keyskeys");
 
   //getting a dynamic name for duplicate names
@@ -32,8 +31,8 @@ const JSONtoEXCEL = (e) => {
   };
 
   //modifying xml or json request or response to match with TE 3.x template headers
-  const handleTE3JSON = (name, data, out_dic, column) => {
-    name = getName(name);
+  const handleTE3JSON = (sheet, data, out_dic, column) => {
+    sheet = getName(sheet);
     if (
       typeof data == "string" ||
       Number.isInteger(data) ||
@@ -41,11 +40,11 @@ const JSONtoEXCEL = (e) => {
       data == null ||
       data == undefined
     ) {
-      let key1 = getName(column ?? "NativeType");
-      if (out_dic[name]) {
-        out_dic[name][key1] = data;
+      let column = getName("NativeType");
+      if (out_dic[sheet]) {
+        out_dic[sheet][column] = data;
       } else {
-        out_dic[name] = { [key1]: data };
+        out_dic[sheet] = { [column]: data };
       }
     } else {
       for (let [key, value] of Object.entries(data)) {
@@ -56,11 +55,11 @@ const JSONtoEXCEL = (e) => {
           value == null ||
           value == undefined
         ) {
-          let key1 = getName(key);
-          if (out_dic[name]) {
-            out_dic[name][key1] = value;
+          let column = getName(key);
+          if (out_dic[sheet]) {
+            out_dic[sheet][column] = value;
           } else {
-            out_dic[name] = { [key1]: value };
+            out_dic[sheet] = { [column]: value };
           }
         } else if (Array.isArray(value)) {
           for (let item of value) {
@@ -208,7 +207,6 @@ const JSONtoEXCEL = (e) => {
       if (err) {
         console.error(err);
       } else {
-        console.log(JSON.stringify(result, null, 2), "resultJSON");
         json = result;
       }
     });

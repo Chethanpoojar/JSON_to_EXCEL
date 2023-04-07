@@ -9,13 +9,18 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "buffer": "^6.0.3",
     "file-saver": "^2.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-final-form": "^6.5.9",
     "react-scripts": "5.0.1",
+    "stream": "^0.0.2",
+    "timers": "^0.1.1",
     "web-vitals": "^2.1.4",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "xml-js": "^1.6.11",
+    "xml2js": "^0.4.23"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import MoveJsonToExcel from "./module/pages/fileUpload";
+import { FormLabel, Grid } from "@mui/material";
+import xml2js from "xml2js";
 
 const JSONtoEXCEL = (e) => {
   const [sourcesheets, setsourcesheets] = useState();
@@ -9,47 +11,14 @@ const JSONtoEXCEL = (e) => {
   const [modifiedJsonData, setModifiedJsonData] = useState({});
   const [excelFile, setExcelFile] = useState(null);
   const [keys, setKeys] = useState({});
+  const [version, setversion] = useState("2");
 
-  // console.log(modifiedJsonData, "modifiedJsonData");
-  console.log(jsonData, "jsonData");
+  console.log(modifiedJsonData, "modifiedJsonData");
+  console.log(jsonData, "jsonDatajsonData");
   console.log(keys, "keyskeys");
 
-  // useEffect(() => {
-  //   if (Object.keys(jsonData).length > 0) {
-  //     const worksheet = XLSX.utils.json_to_sheet(jsonData);
-
-  //     // Create workbook and add worksheet
-  //     const workbook = XLSX.utils.book_new();
-  //     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-
-  //     // Generate Excel file and download
-  //     XLSX.writeFile(workbook, "data.xlsx");
-  //   }
-  // }, [jsonData]);
-
-  // function get_name(name, lis) {
-  //   let aa = [];
-  //   for (let li of lis) {
-  //     let temp = li.match(new RegExp(name + "*"));
-  //     if (temp) {
-  //       aa.push(temp);
-  //     }
-  //   }
-  //   if (aa.length) {
-  //     name = name + (aa.length < 9 ? " 0" : " ") + (aa.length + 1);
-  //   }
-  //   return name;
-  // }
-
-  // function get_sec_name(name, out_dic) {
-  //   let values = [];
-  //   for (let val_dic of Object.values(out_dic)) {
-  //     values.push(...Object.keys(val_dic));
-  //   }
-  //   return get_name(name, values);
-  // }
-
   const getName = (name) => {
+    // console.log(name, "namename");
     let KEYS = keys;
     if (KEYS[name]) {
       KEYS[name] = KEYS[name] + 1;
@@ -62,109 +31,7 @@ const JSONtoEXCEL = (e) => {
     }
   };
 
-  // function get_dict(name, in_dic, out_dic) {
-  //   name = get_name(name, Object.keys(out_dic));
-  //   if (
-  //     typeof in_dic === "string" ||
-  //     typeof in_dic === "number" ||
-  //     typeof in_dic === null ||
-  //     typeof in_dic === undefined
-  //   ) {
-  //     let key1 = get_sec_name("NativeType", out_dic);
-  //     if (out_dic[name]) {
-  //       out_dic[name][key1] = in_dic;
-  //     } else {
-  //       out_dic[name] = { [key1]: in_dic };
-  //     }
-  //   } else {
-  //     for (let [key, value] of Object.entries(in_dic)) {
-  //       if (Array.isArray(value)) {
-  //         for (let dic of value) {
-  //           if (Array.isArray(dic)) {
-  //             out_dic = get_dict(key, dic, out_dic);
-  //           } else if (typeof dic === "object") {
-  //             out_dic = get_dict(key, dic, out_dic);
-  //           } else if (typeof dic === "string") {
-  //             key = get_sec_name(key, out_dic);
-  //             out_dic = get_dict(key, dic, out_dic);
-  //           }
-  //         }
-  //       } else if (
-  //         typeof value === "object" &&
-  //         value !== null &&
-  //         value !== undefined
-  //       ) {
-  //         out_dic = get_dict(key, value, out_dic);
-  //       } else if (
-  //         typeof value === "string" ||
-  //         typeof value === "number" ||
-  //         typeof value === null ||
-  //         typeof value === undefined
-  //       ) {
-  //         key = get_sec_name(key, out_dic);
-  //         if (out_dic[name]) {
-  //           out_dic[name][key] = value;
-  //         } else {
-  //           out_dic[name] = { [key]: value };
-  //         }
-  //       }
-  //     }
-  //   }
-  //   return out_dic;
-  // }
-
-  // function get_dict(name, in_dic, out_dic) {
-  //   name = getName(name);
-  //   if (
-  //     typeof in_dic == "string" ||
-  //     typeof in_dic == "number" ||
-  //     in_dic == null ||
-  //     in_dic == undefined
-  //   ) {
-  //     let key1 = getName("NativeType");
-  //     if (out_dic[name]) {
-  //       out_dic[name][key1] = in_dic;
-  //     } else {
-  //       out_dic[name] = { [key1]: in_dic };
-  //     }
-  //   } else {
-  //     for (let [key, value] of Object.entries(in_dic)) {
-  //       if (Array.isArray(value)) {
-  //         for (let dic of value) {
-  //           if (Array.isArray(dic)) {
-  //             out_dic = get_dict(key, dic, out_dic);
-  //           } else if (typeof dic === "object") {
-  //             out_dic = get_dict(key, dic, out_dic);
-  //           } else if (typeof dic === "string") {
-  //             key = getName(key);
-  //             out_dic = get_dict(key, dic, out_dic);
-  //           }
-  //         }
-  //       } else if (
-  //         typeof value === "object" &&
-  //         value !== null &&
-  //         value !== undefined
-  //       ) {
-  //         out_dic = get_dict(key, value, out_dic);
-  //       } else if (
-  //         typeof value == "string" ||
-  //         typeof value == "number" ||
-  //         value == null ||
-  //         value == undefined
-  //       ) {
-  //         key = getName(key);
-  //         if (out_dic[name]) {
-  //           out_dic[name][key] = value;
-  //         } else {
-  //           out_dic[name] = { [key]: value };
-  //         }
-  //       }
-  //     }
-  //   }
-  //   return out_dic;
-  // }
-
-  const handleJSON = (name, data, out_dic, column) => {
+  const handleTE3JSON = (name, data, out_dic, column) => {
     name = getName(name);
     if (
       typeof data == "string" ||
@@ -196,14 +63,148 @@ const JSONtoEXCEL = (e) => {
           }
         } else if (Array.isArray(value)) {
           for (let item of value) {
-            out_dic = handleJSON(key, item, out_dic);
+            out_dic = handleTE3JSON(key, item, out_dic);
           }
         } else if (
           typeof value === "object" &&
           value !== null &&
           value !== undefined
         ) {
-          out_dic = handleJSON(key, value, out_dic);
+          out_dic = handleTE3JSON(key, value, out_dic);
+        }
+      }
+    }
+
+    return out_dic;
+  };
+
+  // const handleTE2JSON = (name, data, out_dic, sheet) => {
+  //   if (
+  //     typeof data == "string" ||
+  //     Number.isInteger(data) ||
+  //     typeof data == "boolean" ||
+  //     data == null ||
+  //     data == undefined
+  //   ) {
+  //     console.log(name, ":", data, ":", sheet, "name : data : sheet");
+
+  //     let key1 = getName("NativeType");
+  //     if (out_dic[name]) {
+  //       out_dic[name][key1] = data;
+  //     } else {
+  //       out_dic[name] = { [key1]: data };
+  //     }
+
+  //     // if (sheet) {
+  //     //   let key1 = getName("NativeType");
+  //     //   if (out_dic[name]) {
+  //     //     out_dic[name][key1] = data;
+  //     //   } else {
+  //     //     out_dic[sheet] = { [key1]: data };
+  //     //   }
+  //     // } else {
+  //     //   let key1 = getName("NativeType");
+  //     //   if (out_dic[name]) {
+  //     //     out_dic[name][key1] = data;
+  //     //   } else {
+  //     //     out_dic[name] = { [key1]: data };
+  //     //   }
+  //     // }
+  //   } else {
+  //     name = getName(name);
+  //     for (let [key, value] of Object.entries(data)) {
+  //       if (
+  //         typeof value == "string" ||
+  //         Number.isInteger(value) ||
+  //         typeof value == "boolean" ||
+  //         value == null ||
+  //         value == undefined
+  //       ) {
+  //         if (sheet) {
+  //           let key1 = getName(key);
+  //           if (out_dic[sheet]) {
+  //             out_dic[sheet][key1] = value;
+  //           } else {
+  //             out_dic[sheet] = { [key1]: value };
+  //           }
+  //         } else {
+  //           let key1 = getName(key);
+  //           if (out_dic[name]) {
+  //             out_dic[name][key1] = value;
+  //           } else {
+  //             out_dic[name] = { [key1]: value };
+  //           }
+  //         }
+  //       } else if (Array.isArray(value)) {
+  //         if (out_dic[key]) {
+  //           let key1 = getName(key);
+  //           for (let item of value) {
+  //             out_dic = handleTE2JSON(key1, item, out_dic, key1);
+  //           }
+  //         } else {
+  //           for (let item of value) {
+  //             out_dic = handleTE2JSON(key, item, out_dic, name);
+  //           }
+  //         }
+  //       } else if (
+  //         typeof value === "object" &&
+  //         value !== null &&
+  //         value !== undefined
+  //       ) {
+  //         out_dic = handleTE2JSON(key, value, out_dic);
+  //       }
+  //     }
+  //   }
+
+  //   return out_dic;
+  // };
+
+  const handleTe2JSON = (sheet, data, out_dic) => {
+    // console.log(typeof JSON.parse(data), "datadatadatadatadata");
+    // data = JSON.stringify(JSON.parse(data));
+    if (
+      typeof data == "string" ||
+      Number.isInteger(data) ||
+      typeof data == "boolean" ||
+      data == null ||
+      data == undefined
+    ) {
+      let column = getName("NativeType");
+
+      if (out_dic[sheet]) {
+        out_dic[sheet][column] = data;
+      } else {
+        out_dic[sheet] = { [column]: data };
+      }
+    } else {
+      // name = getName(name);
+      for (let [key, value] of Object.entries(data)) {
+        if (
+          typeof value == "string" ||
+          Number.isInteger(value) ||
+          typeof value == "boolean" ||
+          value == null ||
+          value == undefined
+        ) {
+          let column = getName(key);
+
+          if (out_dic[sheet]) {
+            out_dic[sheet][column] = value;
+          } else {
+            out_dic[sheet] = { [column]: value };
+          }
+        } else if (Array.isArray(value)) {
+          let SHEET = getName(key);
+          for (let item of value) {
+            out_dic = handleTe2JSON(SHEET, item, out_dic);
+          }
+        } else if (
+          typeof value === "object" &&
+          value !== null &&
+          value !== undefined
+        ) {
+          let SHEET = getName(key);
+          out_dic = handleTe2JSON(SHEET, value, out_dic);
         }
       }
     }
@@ -212,16 +213,42 @@ const JSONtoEXCEL = (e) => {
   };
 
   const handleReqJsonFileChange = (e) => {
-    const file = e.target.files[0];
-    setjsonData(file);
-    const reader = new FileReader();
-    reader.onload = () => {
-      const data = JSON.parse(reader.result);
-      console.log(data, "datadata");
-      let MODIFIED = handleJSON("Root", data, {});
-      setModifiedJsonData({ ...modifiedJsonData, req: MODIFIED });
-    };
-    reader.readAsText(file);
+    let file = e.target.files[0];
+
+    console.log(file, "filefile");
+
+    if (file.type === "application/json") {
+      setjsonData(file);
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const data = JSON.parse(reader.result);
+        let MODIFIED =
+          version === "2"
+            ? handleTe2JSON("Root", data, {})
+            : version === "3" && handleTE3JSON("Root", data, {});
+        setModifiedJsonData({ ...modifiedJsonData, req: MODIFIED });
+      };
+      reader.readAsText(file);
+    } else if (file.type === "text/xml") {
+      setjsonData(file);
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const xml = event.target.result;
+        const JSON = xmlToJsonConvert(xml);
+        console.log(JSON, "JSONJSONJSON");
+        let MODIFIED_JSON =
+          version === "2"
+            ? handleTe2JSON("Root", JSON, {})
+            : version === "3" && handleTE3JSON("Root", JSON, {});
+        setModifiedJsonData({ ...modifiedJsonData, req: MODIFIED_JSON });
+      };
+      reader.readAsText(file);
+    } else {
+      window.alert("Unsupported file type");
+      // file = "";
+    }
   };
 
   const handleRespJsonFileChange = (e) => {
@@ -230,10 +257,26 @@ const JSONtoEXCEL = (e) => {
     const reader = new FileReader();
     reader.onload = () => {
       const data = JSON.parse(reader.result);
-      let MODIFIED = handleJSON("Root", data, {});
+      let MODIFIED = handleTE3JSON("Root", data, {});
       setModifiedJsonData({ ...modifiedJsonData, resp: MODIFIED });
     };
     reader.readAsText(file);
+  };
+
+  const xmlToJsonConvert = (xml) => {
+    console.log(xml, "xmlxmlxml");
+    const parser = new xml2js.Parser({ explicitArray: false });
+    let json = {};
+    parser.parseString(xml, (err, result) => {
+      if (err) {
+        console.error(err);
+      } else {
+        console.log(JSON.stringify(result, null, 2), "resultJSON");
+        json = result;
+      }
+    });
+
+    return json;
   };
 
   const handleExcelFileChange = (e) => {
@@ -361,37 +404,55 @@ const JSONtoEXCEL = (e) => {
     <>
       <div
         style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "center",
           marginTop: "4rem",
         }}
       >
-        <>
-          Request : <input type="file" onChange={handleReqJsonFileChange} />
-        </>
+        <Grid container spacing={3}>
+          <Grid item xs={6} container justifyContent="flex-end">
+            <FormLabel> Request : </FormLabel>
+            <input type="file" onChange={handleReqJsonFileChange} />
+          </Grid>
 
-        <>
-          Response : <input type="file" onChange={handleRespJsonFileChange} />
-        </>
+          <Grid item xs={6}>
+            {" "}
+            <FormLabel>Response : </FormLabel>{" "}
+            <input type="file" onChange={handleRespJsonFileChange} />
+          </Grid>
+        </Grid>
 
-        <>
-          Excel Template :
-          <input type="file" onChange={handleExcelFileChange} accept=".xlsx" />
-        </>
-      </div>
+        <Grid container marginTop="3rem">
+          <Grid item xs={6} container justifyContent="flex-end">
+            <FormLabel>TE Version : </FormLabel>{" "}
+            <select
+              style={{ width: "6rem", marginRight: "5rem" }}
+              onChange={(e) => setversion(e.target.value)}
+            >
+              <option value="2">2.x</option>
+              <option value="3">3.x</option>
+            </select>
+          </Grid>
 
-      <div
-        style={{ display: "flex", justifyContent: "center", marginTop: "4rem" }}
-      >
-        <button
-          disabled={
-            !((modifiedJsonData.req || modifiedJsonData.resp) && excelFile)
-          }
-          onClick={handleUpload}
-        >
-          Upload
-        </button>
+          <Grid item xs={6}>
+            <FormLabel> Excel Template :</FormLabel>
+
+            <input
+              type="file"
+              onChange={handleExcelFileChange}
+              accept=".xlsx"
+            />
+          </Grid>
+        </Grid>
+
+        <Grid container marginTop="3rem" justifyContent="center">
+          <button
+            disabled={
+              !((modifiedJsonData.req || modifiedJsonData.resp) && excelFile)
+            }
+            onClick={handleUpload}
+          >
+            Upload
+          </button>
+        </Grid>
       </div>
 
       {/* {sourcesheets?.length > 0 && (

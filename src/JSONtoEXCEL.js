@@ -17,8 +17,8 @@ const JSONtoEXCEL = (e) => {
   console.log(jsonData, "jsonDatajsonData");
   console.log(keys, "keyskeys");
 
+  //getting a dynamic name for duplicate names
   const getName = (name) => {
-    // console.log(name, "namename");
     let KEYS = keys;
     if (KEYS[name]) {
       KEYS[name] = KEYS[name] + 1;
@@ -31,6 +31,7 @@ const JSONtoEXCEL = (e) => {
     }
   };
 
+  //modifying xml or json request or response to match with TE 3.x template headers
   const handleTE3JSON = (name, data, out_dic, column) => {
     name = getName(name);
     if (
@@ -78,90 +79,8 @@ const JSONtoEXCEL = (e) => {
     return out_dic;
   };
 
-  // const handleTE2JSON = (name, data, out_dic, sheet) => {
-  //   if (
-  //     typeof data == "string" ||
-  //     Number.isInteger(data) ||
-  //     typeof data == "boolean" ||
-  //     data == null ||
-  //     data == undefined
-  //   ) {
-  //     console.log(name, ":", data, ":", sheet, "name : data : sheet");
-
-  //     let key1 = getName("NativeType");
-  //     if (out_dic[name]) {
-  //       out_dic[name][key1] = data;
-  //     } else {
-  //       out_dic[name] = { [key1]: data };
-  //     }
-
-  //     // if (sheet) {
-  //     //   let key1 = getName("NativeType");
-  //     //   if (out_dic[name]) {
-  //     //     out_dic[name][key1] = data;
-  //     //   } else {
-  //     //     out_dic[sheet] = { [key1]: data };
-  //     //   }
-  //     // } else {
-  //     //   let key1 = getName("NativeType");
-  //     //   if (out_dic[name]) {
-  //     //     out_dic[name][key1] = data;
-  //     //   } else {
-  //     //     out_dic[name] = { [key1]: data };
-  //     //   }
-  //     // }
-  //   } else {
-  //     name = getName(name);
-  //     for (let [key, value] of Object.entries(data)) {
-  //       if (
-  //         typeof value == "string" ||
-  //         Number.isInteger(value) ||
-  //         typeof value == "boolean" ||
-  //         value == null ||
-  //         value == undefined
-  //       ) {
-  //         if (sheet) {
-  //           let key1 = getName(key);
-  //           if (out_dic[sheet]) {
-  //             out_dic[sheet][key1] = value;
-  //           } else {
-  //             out_dic[sheet] = { [key1]: value };
-  //           }
-  //         } else {
-  //           let key1 = getName(key);
-  //           if (out_dic[name]) {
-  //             out_dic[name][key1] = value;
-  //           } else {
-  //             out_dic[name] = { [key1]: value };
-  //           }
-  //         }
-  //       } else if (Array.isArray(value)) {
-  //         if (out_dic[key]) {
-  //           let key1 = getName(key);
-  //           for (let item of value) {
-  //             out_dic = handleTE2JSON(key1, item, out_dic, key1);
-  //           }
-  //         } else {
-  //           for (let item of value) {
-  //             out_dic = handleTE2JSON(key, item, out_dic, name);
-  //           }
-  //         }
-  //       } else if (
-  //         typeof value === "object" &&
-  //         value !== null &&
-  //         value !== undefined
-  //       ) {
-  //         out_dic = handleTE2JSON(key, value, out_dic);
-  //       }
-  //     }
-  //   }
-
-  //   return out_dic;
-  // };
-
+  //modifying xml or json request or response to match with TE 2.x template headers
   const handleTe2JSON = (sheet, data, out_dic) => {
-    // console.log(typeof JSON.parse(data), "datadatadatadatadata");
-    // data = JSON.stringify(JSON.parse(data));
     if (
       typeof data == "string" ||
       Number.isInteger(data) ||
@@ -212,10 +131,9 @@ const JSONtoEXCEL = (e) => {
     return out_dic;
   };
 
+  //uploading json or xml request file
   const handleReqJsonFileChange = (e) => {
     let file = e.target.files[0];
-
-    console.log(file, "filefile");
 
     if (file.type === "application/json") {
       setjsonData(file);
@@ -251,18 +169,37 @@ const JSONtoEXCEL = (e) => {
     }
   };
 
+  //uploading json or xml response file
   const handleRespJsonFileChange = (e) => {
     const file = e.target.files[0];
-    setjsonData(file);
-    const reader = new FileReader();
-    reader.onload = () => {
-      const data = JSON.parse(reader.result);
-      let MODIFIED = handleTE3JSON("Root", data, {});
-      setModifiedJsonData({ ...modifiedJsonData, resp: MODIFIED });
-    };
-    reader.readAsText(file);
+
+    if (file.type === "application/json") {
+      setjsonData(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const data = JSON.parse(reader.result);
+        let MODIFIED = handleTE3JSON("Root", data, {});
+        setModifiedJsonData({ ...modifiedJsonData, resp: MODIFIED });
+      };
+      reader.readAsText(file);
+    } else if (file.type === "text/xml") {
+      setjsonData(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const xml = event.target.result;
+        const JSON = xmlToJsonConvert(xml);
+        console.log(JSON, "JSONJSONJSON");
+        let MODIFIED_JSON =
+          version === "2"
+            ? handleTe2JSON("Root", JSON, {})
+            : version === "3" && handleTE3JSON("Root", JSON, {});
+        setModifiedJsonData({ ...modifiedJsonData, req: MODIFIED_JSON });
+      };
+      reader.readAsText(file);
+    }
   };
 
+  //converting xml request or response to json to match with template
   const xmlToJsonConvert = (xml) => {
     console.log(xml, "xmlxmlxml");
     const parser = new xml2js.Parser({ explicitArray: false });
@@ -279,11 +216,13 @@ const JSONtoEXCEL = (e) => {
     return json;
   };
 
+  //uploading TE template
   const handleExcelFileChange = (e) => {
     const file = e.target.files[0];
     setExcelFile(file);
   };
 
+  //comparing request or response with template and filling the value in excel
   const handleUpload = (event) => {
     const reader = new FileReader();
 
@@ -407,20 +346,7 @@ const JSONtoEXCEL = (e) => {
           marginTop: "4rem",
         }}
       >
-        <Grid container spacing={3}>
-          <Grid item xs={6} container justifyContent="flex-end">
-            <FormLabel> Request : </FormLabel>
-            <input type="file" onChange={handleReqJsonFileChange} />
-          </Grid>
-
-          <Grid item xs={6}>
-            {" "}
-            <FormLabel>Response : </FormLabel>{" "}
-            <input type="file" onChange={handleRespJsonFileChange} />
-          </Grid>
-        </Grid>
-
-        <Grid container marginTop="3rem">
+        <Grid container>
           <Grid item xs={6} container justifyContent="flex-end">
             <FormLabel>TE Version : </FormLabel>{" "}
             <select
@@ -440,6 +366,19 @@ const JSONtoEXCEL = (e) => {
               onChange={handleExcelFileChange}
               accept=".xlsx"
             />
+          </Grid>
+        </Grid>
+
+        <Grid container spacing={3} marginTop="3rem">
+          <Grid item xs={6} container justifyContent="flex-end">
+            <FormLabel> Request : </FormLabel>
+            <input type="file" onChange={handleReqJsonFileChange} />
+          </Grid>
+
+          <Grid item xs={6}>
+            {" "}
+            <FormLabel>Response : </FormLabel>{" "}
+            <input type="file" onChange={handleRespJsonFileChange} />
           </Grid>
         </Grid>
 
